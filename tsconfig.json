@@ -17,6 +17,10 @@
     "lib": [
       "es2018",
       "dom"
-    ]
-  }
+    ],
+  },
+  "include": [
+    "./src/*",
+    "./node_modules/reciprocity-tracker-agent-actor/src/*"
+  ],
 }
