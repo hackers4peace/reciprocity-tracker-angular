@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { StateService } from '../../state.service';
+import { Observable } from 'rxjs';
+
 
 @Component({
   selector: 'app-add-agent',
@@ -11,7 +13,9 @@ export class AddAgentComponent implements OnInit {
   constructor(private stateService: StateService) { }
 
   ngOnInit() {
-    
+    // map state
+    this.stateService.state$.subscribe(state => {
+      console.log(state);
+    });
   }
-
 }

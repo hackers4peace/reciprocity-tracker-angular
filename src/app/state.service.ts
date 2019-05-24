@@ -13,6 +13,8 @@ import {
 } from 'reciprocity-tracker-agent-actor/src/actionTypes';
 import { Agent, Exchange, Flow } from 'reciprocity-tracker-agent-actor/src/interfaces';
 
+import {Observable, BehaviorSubject} from 'rxjs';
+
 
 declare global {
   interface ActorMessageType {
@@ -77,7 +79,7 @@ class UiActor extends Actor<StateMessage> {
   private stateActorHandle: ActorHandle<'state'>;
   private state: object;
   private actions: object;
-  private connectedComponentsCallbacks = [];
+  callback: (state: object) => void;
 
   constructor() {
     super();
@@ -86,15 +88,14 @@ class UiActor extends Actor<StateMessage> {
   }
 
   async onMessage(stateMessage: StateMessage) {
-    this.state = stateMessage.state;
-
-    for (const callback of this.connectedComponentsCallbacks) {
-      callback(this.state);
+    console.log(stateMessage);
+    if (this.callback) {
+      this.callback(stateMessage.state);
     }
   }
 
-  subscribe(componentCallback) {
-    this.connectedComponentsCallbacks.push(componentCallback);
+  subscribe(callback: (state: object) => void) {
+    this.callback = callback;
   }
 }
 
@@ -102,19 +103,22 @@ class UiActor extends Actor<StateMessage> {
   providedIn: 'root'
 })
 export class StateService {
+  private uiActor: UiActor;
 
-  constructor() { }
+  // hide state subject, no not allow next() elseware
+  private stateSubject$: BehaviorSubject<object> = new BehaviorSubject({});
+  public state$: Observable<object> = this.stateSubject$.asObservable();
 
-  static init() {
-    // TODO: replace with injection tokens
-    return () => new Promise(resolve => {
-      const stateActor = new StateActor();
-      hookup('state', stateActor);
+  constructor() {
+    // todo: move bootstraping someware else
+    const stateActor = new StateActor();
+    hookup('state', stateActor);
 
-      const uiActor = new UiActor();
-      hookup('ui', uiActor);
+    this.uiActor = new UiActor();
+    hookup('ui', this.uiActor);
 
-      resolve();
+    this.uiActor.subscribe((state: object) => {
+      this.stateSubject$.next(state);
     });
   }
 }

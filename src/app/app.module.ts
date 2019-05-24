@@ -7,8 +7,6 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AddAgentComponent } from './screens/add-agent/add-agent.component';
 
-import { StateService } from './state.service';
-
 @NgModule({
   declarations: [
     AppComponent,
@@ -18,13 +16,6 @@ import { StateService } from './state.service';
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-  ],
-  providers: [
-    {
-      provide: APP_INITIALIZER,
-      useFactory: StateService.init,
-      multi: true,
-    }
   ],
   bootstrap: [AppComponent]
 })
