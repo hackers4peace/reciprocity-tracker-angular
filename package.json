@@ -22,7 +22,7 @@
     "@angular/platform-browser-dynamic": "~7.2.0",
     "@angular/router": "~7.2.0",
     "core-js": "^2.5.4",
-    "reciprocity-tracker-agent-actor": "github:hackers4peace/reciprocity-tracker-state-actor#master",
+    "reciprocity-tracker-state-actor": "github:hackers4peace/reciprocity-tracker-state-actor#master",
     "actor-helpers": "github:PolymerLabs/actor-helpers.git#master",
     "rxjs": "~6.3.3",
     "tslib": "^1.9.0",

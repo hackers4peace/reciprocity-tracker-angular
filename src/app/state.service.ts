@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actor, ActorHandle, lookup, hookup } from 'actor-helpers/lib/actor/Actor';
-import StateActor from 'reciprocity-tracker-agent-actor/src/StateActor';
+import StateActor from 'reciprocity-tracker-state-actor/lib/StateActor';
 import {
   ADD_AGENT,
   SELECT_AGENT,
@@ -10,8 +10,8 @@ import {
   CANCEL_EXCHANGE,
   ADD_FLOW,
   STATE,
-} from 'reciprocity-tracker-agent-actor/src/actionTypes';
-import { Agent, Exchange, Flow } from 'reciprocity-tracker-agent-actor/src/interfaces';
+} from 'reciprocity-tracker-state-actor/lib/actionTypes';
+import { Agent, Exchange, Flow } from 'reciprocity-tracker-state-actor/lib/interfaces';
 
 import {Observable, BehaviorSubject} from 'rxjs';
 
@@ -76,26 +76,15 @@ const actionsFactory = (store: ActorHandle<'state'>) => ({
 });
 
 class UiActor extends Actor<StateMessage> {
-  private stateActorHandle: ActorHandle<'state'>;
-  private state: object;
-  private actions: object;
-  callback: (state: object) => void;
 
-  constructor() {
-    super();
-    this.stateActorHandle = lookup('state');
-    this.actions = actionsFactory(this.stateActorHandle);
+  private stateSubject$: BehaviorSubject<object>
+
+  constructor (stateSubject$) {
+    super()
+    this.stateSubject$ = stateSubject$
   }
-
   async onMessage(stateMessage: StateMessage) {
-    console.log(stateMessage);
-    if (this.callback) {
-      this.callback(stateMessage.state);
-    }
-  }
-
-  subscribe(callback: (state: object) => void) {
-    this.callback = callback;
+    this.stateSubject$.next(stateMessage.state)
   }
 }
 
@@ -104,21 +93,22 @@ class UiActor extends Actor<StateMessage> {
 })
 export class StateService {
   private uiActor: UiActor;
+  private stateActorHandle: ActorHandle<'state'>;
 
-  // hide state subject, no not allow next() elseware
+  // hide state subject, to not allow next() elsewhere
   private stateSubject$: BehaviorSubject<object> = new BehaviorSubject({});
   public state$: Observable<object> = this.stateSubject$.asObservable();
+  public actions: object
 
   constructor() {
+    this.uiActor = new UiActor(this.stateSubject$);
+    hookup('ui', this.uiActor);
+
     // todo: move bootstraping someware else
     const stateActor = new StateActor();
     hookup('state', stateActor);
 
-    this.uiActor = new UiActor();
-    hookup('ui', this.uiActor);
-
-    this.uiActor.subscribe((state: object) => {
-      this.stateSubject$.next(state);
-    });
+    this.stateActorHandle = lookup('state');
+    this.actions = actionsFactory(this.stateActorHandle);
   }
 }
