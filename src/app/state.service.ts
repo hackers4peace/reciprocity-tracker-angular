@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Actor, ActorHandle, lookup, hookup } from 'actor-helpers/lib/actor/Actor';
 import StateActor from 'reciprocity-tracker-state-actor/lib/StateActor';
 import {
@@ -78,13 +78,14 @@ const actionsFactory = (store: ActorHandle<'state'>) => ({
 class UiActor extends Actor<StateMessage> {
 
   private stateSubject$: BehaviorSubject<object>
-
-  constructor (stateSubject$) {
+  private zone: NgZone;
+  constructor (stateSubject$, zone) {
     super()
     this.stateSubject$ = stateSubject$
+    this.zone = zone;
   }
   async onMessage(stateMessage: StateMessage) {
-    this.stateSubject$.next(stateMessage.state)
+    this.zone.run(() => this.stateSubject$.next(stateMessage.state));
   }
 }
 
@@ -98,10 +99,10 @@ export class StateService {
   // hide state subject, to not allow next() elsewhere
   private stateSubject$: BehaviorSubject<object> = new BehaviorSubject({});
   public state$: Observable<object> = this.stateSubject$.asObservable();
-  public actions: any;
+  public actions: any
 
-  constructor() {
-    this.uiActor = new UiActor(this.stateSubject$);
+  constructor(private zone: NgZone) {
+    this.uiActor = new UiActor(this.stateSubject$, zone);
     hookup('ui', this.uiActor);
 
     // todo: move bootstraping someware else

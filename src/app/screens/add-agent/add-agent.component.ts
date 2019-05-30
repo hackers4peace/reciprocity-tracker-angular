@@ -5,20 +5,24 @@ import { Agent } from 'reciprocity-tracker-state-actor/lib/interfaces';
 
 import cuid from 'cuid';
 import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
-import { ChangeDetectorRef } from '@angular/core';
+import { map } from 'rxjs/operators';
+
 
 @Component({
   selector: 'app-add-agent',
   templateUrl: './add-agent.component.html',
-  styleUrls: ['./add-agent.component.scss']
+  styleUrls: ['./add-agent.component.scss'],
 })
 export class AddAgentComponent implements OnInit {
-  agents$: Observable<Array<Agent>>;
+  agents$: Observable<Agent[]>;
 
   constructor(
     private stateService: StateService,
-  ) { }
+  ) {
+    this.agents$ = this.stateService.state$.pipe(
+      map((state: any) => state.agents || []),
+    );
+  }
 
   onSubmit(form: NgForm) {
     if (form.valid) {
@@ -27,8 +31,5 @@ export class AddAgentComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.agents$ = this.stateService.state$.pipe(
-      map((state: any) => state.agents || []),
-    );
   }
 }
