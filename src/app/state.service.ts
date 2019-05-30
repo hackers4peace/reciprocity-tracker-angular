@@ -98,7 +98,7 @@ export class StateService {
   // hide state subject, to not allow next() elsewhere
   private stateSubject$: BehaviorSubject<object> = new BehaviorSubject({});
   public state$: Observable<object> = this.stateSubject$.asObservable();
-  public actions: object
+  public actions: any;
 
   constructor() {
     this.uiActor = new UiActor(this.stateSubject$);
