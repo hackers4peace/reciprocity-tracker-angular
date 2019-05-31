@@ -1,10 +1,10 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { AddAgentComponent } from './screens/add-agent/add-agent.component';
+import { AddAgentComponent } from './views/add-agent/add-agent.component';
 
 const routes: Routes = [
-  { path: 'add-agent', component: AddAgentComponent }
+  { path: 'add-agent', component: AddAgentComponent },
 ];
 
 @NgModule({

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { StateService } from '../../state.service';
-import { NgForm } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 import { Agent } from 'reciprocity-tracker-state-actor/lib/interfaces';
 
 import cuid from 'cuid';
@@ -14,19 +14,22 @@ import { map } from 'rxjs/operators';
   styleUrls: ['./add-agent.component.scss'],
 })
 export class AddAgentComponent implements OnInit {
-  agents$: Observable<Agent[]>;
+  agent = this.fb.group({
+    name: ['', [Validators.required]],
+  });
+  agents$ = this.stateService.state$.pipe(
+    map((state: any) => state.agents || []),
+  );
 
   constructor(
     private stateService: StateService,
-  ) {
-    this.agents$ = this.stateService.state$.pipe(
-      map((state: any) => state.agents || []),
-    );
-  }
+    private fb: FormBuilder,
+  ) {}
 
-  onSubmit(form: NgForm) {
-    if (form.valid) {
-      this.stateService.actions.addAgent({ id: cuid(), name: form.value.name });
+  onSubmit({ value, valid }: { value: object, valid: boolean }) {
+    console.log(value);
+    if (valid) {
+      this.stateService.actions.addAgent({ id: cuid(), ...value });
     }
   }
 
